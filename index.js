@@ -3,6 +3,8 @@ var spawn = require('child_process').spawn;
 var glob = require('simple-glob');
 var fs = require('fs');
 
+var CucumberCLI = require('cucumber').Cli;
+
 var binPath = (process.platform === 'win32') ? '.\node_modules\.bin\cucumber-js.cmd' : './node_modules/cucumber/bin/cucumber.js';
 
 binPath = fs.existsSync(binPath) ? binPath : __dirname + ((process.platform === 'win32') ? '\\' : '/') + binPath;
@@ -26,7 +28,7 @@ var cucumber = function(options) {
     });
 
     runOptions.push('-f');
-    var format = options.format || 'pretty';
+    var format = options.format || 'pretty';
     runOptions.push(format);
 
 
@@ -38,19 +40,10 @@ var cucumber = function(options) {
 
         var processOptions = runOptions.slice(0);
         processOptions.push(filename);
-        
-        var cli = spawn(binPath, processOptions);
 
-        var output = [];
+        var cli = CucumberCLI(processOptions);
+        cli.run(function(code) {
 
-        cli.stdout.on('data', function(data) {
-            output.push(data);
-        });
-
-        cli.on('exit', function(exitCode) {
-            var data = Buffer.concat(output).toString();
-            process.stdout.write(data);
-            process.stdout.write('\r\nFeature: ' + filename + '\r\n');
         });
         return callback();
     };
